@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Meal Plan System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      background-color: #f9f9f9;
+      color: #333;
+      background-image: url(kainkana.jpg);
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 1.5rem 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+    select, input[type="text"], textarea {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.3rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      resize: vertical;
+      font-size: 1rem;
+    }
+    textarea {
+      min-height: 60px;
+    }
+    .buttons {
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+    button {
+      background-color: #2980b9;
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      margin: 0 0.5rem;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #1f5f8b;
+    }
+    .meal-plan-display {
+      margin-top: 2rem;
+      background: #ecf0f1;
+      padding: 1rem;
+      border-radius: 6px;
+    }
+    .meal-item {
+      margin-bottom: 0.7rem;
+    }
+    .meal-item strong {
+      color: #2c3e50;
+    }
+    @media (max-width: 600px) {
+      body {
+        margin: 1rem;
+      }
+      .container {
+        padding: 1rem 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Meal Plan System</h1>
+  <div class="container">
+    <label for="day-select">Select Day:</label>
+    <select id="day-select">
+      <option value="Monday">Monday</option>
+      <option value="Tuesday">Tuesday</option>
+      <option value="Wednesday">Wednesday</option>
+      <option value="Thursday">Thursday</option>
+      <option value="Friday">Friday</option>
+      <option value="Saturday">Saturday</option>
+      <option value="Sunday">Sunday</option>
+    </select>
+
+    <label for="breakfast-input">Breakfast:</label>
+    <textarea id="breakfast-input" placeholder="Enter breakfast details..."></textarea>
+
+    <label for="lunch-input">Lunch:</label>
+    <textarea id="lunch-input" placeholder="Enter lunch details..."></textarea>
+
+    <label for="dinner-input">Dinner:</label>
+    <textarea id="dinner-input" placeholder="Enter dinner details..."></textarea>
+
+    <div class="buttons">
+      <button id="save-btn">Save Meal Plan</button>
+      <button id="clear-btn" style="background-color: #c0392b;">Clear Meal Plan</button>
+    </div>
+
+    <div class="meal-plan-display" id="meal-plan-display">
+      <h2>Saved Meal Plan</h2>
+      <p>No meal plan saved for this day.</p>
+    </div>
+  </div>
+
+  <script>
+    const daySelect = document.getElementById('day-select');
+    const breakfastInput = document.getElementById('breakfast-input');
+    const lunchInput = document.getElementById('lunch-input');
+    const dinnerInput = document.getElementById('dinner-input');
+    const saveBtn = document.getElementById('save-btn');
+    const clearBtn = document.getElementById('clear-btn');
+    const mealPlanDisplay = document.getElementById('meal-plan-display');
+
+    function loadMealPlan(day) {
+      const mealPlans = JSON.parse(localStorage.getItem('mealPlans') || '{}');
+      const plan = mealPlans[day];
+      if (plan) {
+        breakfastInput.value = plan.breakfast || '';
+        lunchInput.value = plan.lunch || '';
+        dinnerInput.value = plan.dinner || '';
+        showMealPlan(plan);
+      } else {
+        breakfastInput.value = '';
+        lunchInput.value = '';
+        dinnerInput.value = '';
+        mealPlanDisplay.innerHTML = '<h2>Saved Meal Plan</h2><p>No meal plan saved for this day.</p>';
+      }
+    }
+
+    function showMealPlan(plan) {
+      mealPlanDisplay.innerHTML = `
+        <h2>Saved Meal Plan</h2>
+        <div class="meal-item"><strong>Breakfast:</strong> ${plan.breakfast ? escapeHtml(plan.breakfast) : '<em>None</em>'}</div>
+        <div class="meal-item"><strong>Lunch:</strong> ${plan.lunch ? escapeHtml(plan.lunch) : '<em>None</em>'}</div>
+        <div class="meal-item"><strong>Dinner:</strong> ${plan.dinner ? escapeHtml(plan.dinner) : '<em>None</em>'}</div>
+      `;
+    }
+
+    function saveMealPlan() {
+      const day = daySelect.value;
+      const breakfast = breakfastInput.value.trim();
+      const lunch = lunchInput.value.trim();
+      const dinner = dinnerInput.value.trim();
+      showMealPlan(mealPlans[day]);
+      alert('Meal plan saved for ' + day);
+    }
+
+    function clearMealPlan() {
+      const day = daySelect.value;
+      const mealPlans = JSON.parse(localStorage.getItem('mealPlans') || '{}');
+      if(mealPlans[day]) {
+        delete mealPlans[day];
+        localStorage.setItem('mealPlans', JSON.stringify(mealPlans));
+        breakfastInput.value = '';
+        lunchInput.value = '';
+        dinnerInput.value = '';
+        mealPlanDisplay.innerHTML = '<h2>Saved Meal Plan</h2><p>No meal plan saved for this day.</p>';
+        alert('Meal plan cleared for ' + day);
+      } else {
+        alert('No meal plan exists to clear for ' + day);
+      }
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;")
+        .replace(/\n/g, "<br>");
+    }
+
+    daySelect.addEventListener('change', () => {
+      loadMealPlan(daySelect.value);
+    });
+
+    saveBtn.addEventListener('click', saveMealPlan);
+    clearBtn.addEventListener('click', clearMealPlan);
+
+    const todayIndex = new Date().getDay();
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    if (todayIndex >= 1 && todayIndex <= 7) {
+      daySelect.value = days[todayIndex];
+    } else {
+      daySelect.value = 'Monday';
+    }
+    loadMealPlan(daySelect.value);
+  </script>
+</body>
+</html>
